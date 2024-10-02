@@ -39,37 +39,39 @@ class _WebViewScreenState extends State<WebViewScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          InAppWebView(
-            initialUrlRequest: URLRequest(
-              url: WebUri("https://ie.bigboss.easycalldns.com:5005/"),
+          SafeArea(
+            child: InAppWebView(
+              initialUrlRequest: URLRequest(
+                url: WebUri("https://ie.bigboss.easycalldns.com:5005/"),
+              ),
+              onWebViewCreated: (controller) {
+                _controller = controller;
+              },
+              onLoadStart: (controller, url) {
+                setState(() {
+                  _isLoading = true;
+                });
+              },
+              onLoadStop: (controller, url) async {
+                setState(() {
+                  _isLoading = false;
+                });
+              },
+              onReceivedServerTrustAuthRequest: (controller, challenge) async {
+                // Allow self-signed certificates for testing purposes
+                return ServerTrustAuthResponse(
+                  action: ServerTrustAuthResponseAction.PROCEED,
+                );
+              },
+              onReceivedError: (controller, request, error) {
+                print('Web resource error: ${error.description}');
+              },
+              onProgressChanged: (controller, progress) {
+                setState(() {
+                  _isLoading = progress < 100;
+                });
+              },
             ),
-            onWebViewCreated: (controller) {
-              _controller = controller;
-            },
-            onLoadStart: (controller, url) {
-              setState(() {
-                _isLoading = true;
-              });
-            },
-            onLoadStop: (controller, url) async {
-              setState(() {
-                _isLoading = false;
-              });
-            },
-            onReceivedServerTrustAuthRequest: (controller, challenge) async {
-              // Allow self-signed certificates for testing purposes
-              return ServerTrustAuthResponse(
-                action: ServerTrustAuthResponseAction.PROCEED,
-              );
-            },
-            onReceivedError: (controller, request, error) {
-              print('Web resource error: ${error.description}');
-            },
-            onProgressChanged: (controller, progress) {
-              setState(() {
-                _isLoading = progress < 100;
-              });
-            },
           ),
           _isLoading
               ? Center(child: CircularProgressIndicator.adaptive())
